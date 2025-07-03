@@ -33,12 +33,12 @@ class KendaraanResource extends Resource
     {
         return 'Kendaraan';
     }
-    
+
     public static function getNavigationGroup(): ?string
     {
         return 'Informasi & Data';
     }
-    
+
     public static function form(Form $form): Form
     {
         return $form
@@ -75,6 +75,9 @@ class KendaraanResource extends Resource
                     ->suffix('km')
                     ->default(0),
 
+                // Forms\Components\FileUpload::make('warna')
+                //     ->disk()
+
                 Forms\Components\Select::make('status')
                     ->label('Status Kendaraan')
                     ->required()
@@ -84,7 +87,7 @@ class KendaraanResource extends Resource
                         'PERBAIKAN' => 'Perbaikan',
                     ])
                     ->default('TERSEDIA'),
-                            ]);
+            ]);
     }
 
     public static function table(Table $table): Table

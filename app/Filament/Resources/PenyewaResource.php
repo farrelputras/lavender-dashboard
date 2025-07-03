@@ -6,7 +6,9 @@ use App\Filament\Resources\PenyewaResource\Pages;
 use App\Filament\Resources\PenyewaResource\RelationManagers;
 use App\Models\Penyewa;
 use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\FormsComponent;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -38,12 +40,60 @@ class PenyewaResource extends Resource
     {
         return 'Informasi & Data';
     }
-    
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                //
+                Forms\Components\TextInput::make('id')
+                    ->label('Nama Penyewa')
+                    ->required(),
+
+                Forms\Components\TextInput::make('no_telp')
+                    ->label('No. Telp')
+                    ->required()
+                    ->prefix('+62'),
+
+                Forms\Components\Textarea::make('alamat')
+                    ->label('Alamat')
+                    ->required()
+                    ->rows(3),
+
+                Forms\Components\TextInput::make('asal')
+                    ->label('Asal')
+                    ->nullable(),
+
+                Forms\Components\Radio::make('Jenis Kelamin')
+                    ->options([
+                        'L' => 'Laki-laki',
+                        'P' => 'Perempuan',
+                    ])
+                    ->required(),
+
+                Forms\Components\Select::make('jaminan1')
+                    ->label('Jaminan 1')
+                    ->options([
+                        'KTP' => 'KTP',
+                        'KTM' => 'KTM',
+                        'SIM' => 'SIM',
+                        'LAINNYA' => 'Lainnya',
+                    ])
+                    ->required(),
+
+                // Forms\Components\FileUpload::make('jaminan2')
+                //     ->disk()
+
+
+                Forms\Components\Select::make('jaminan2')
+                    ->label('Jaminan 2')
+                    ->options([
+                        'KTP' => 'KTP',
+                        'KTM' => 'KTM',
+                        'SIM' => 'SIM',
+                        'LAINNYA' => 'Lainnya',
+                    ]),
+
+
             ]);
     }
 

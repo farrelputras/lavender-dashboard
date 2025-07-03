@@ -17,9 +17,9 @@ return new class extends Migration
             $table->string('alamat');
             $table->string('no_telp');
             $table->string('asal')->nullable();
-            $table->enum ('jenis_kelamin', ['L', 'P']);
-            $table->enum ('jaminan1', ['KTP', 'KTM', 'SIM', 'LAINNYA']);
-            $table->enum ('jaminan2', ['KTP', 'KTM', 'SIM', 'LAINNYA']);
+            $table->enum('jenis_kelamin', ['L', 'P']);
+            $table->enum('jaminan1', ['KTP', 'KTM', 'SIM', 'LAINNYA']);
+            $table->enum('jaminan2', ['KTP', 'KTM', 'SIM', 'LAINNYA'])->nullable();
             $table->timestamps();
         });
     }
