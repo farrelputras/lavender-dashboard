@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('model');
             $table->year('tahun');
             $table->unsignedBigInteger('kilometer')->nullable();
-            $table->string('bensin')->nullable();
+            $table->string('gambar')->nullable();
             $table->enum('status', ['TERSEDIA', 'DISEWA', 'PERBAIKAN'])->default('TERSEDIA');
             $table->timestamps();
         });
