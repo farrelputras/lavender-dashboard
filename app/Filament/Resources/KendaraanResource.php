@@ -5,10 +5,14 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\KendaraanResource\Pages;
 use App\Filament\Resources\KendaraanResource\RelationManagers;
 use App\Models\Kendaraan;
+use Dom\Text;
+use Filament\Actions\ViewAction;
+use Filament\Tables\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -75,8 +79,9 @@ class KendaraanResource extends Resource
                     ->suffix('km')
                     ->default(0),
 
-                // Forms\Components\FileUpload::make('warna')
-                //     ->disk()
+                Forms\Components\FileUpload::make('gambar')
+                    ->label('Foto Kendaraan')
+                    ->directory('fotoKendaraan'),
 
                 Forms\Components\Select::make('status')
                     ->label('Status Kendaraan')
@@ -94,13 +99,31 @@ class KendaraanResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('nopol')
+                    ->label('Plat Nomor')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('model')
+                    ->label('Model')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn($state) => match ($state) {
+                        'TERSEDIA' => 'success',
+                        'DISEWA' => 'warning',
+                        'PERBAIKAN' => 'danger',
+                    })
+                    ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -23,7 +23,7 @@ class PembayaranResource extends Resource
     {
         return \App\Models\Pembayaran::class;
     }
-    
+
     public static function getModelLabel(): string
     {
         return 'Pembayaran';
@@ -38,12 +38,15 @@ class PembayaranResource extends Resource
     {
         return 'Pembayaran';
     }
-    
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                //
+                Forms\Components\Hidden::make('rental_id')
+                    ->required(),
+
+
             ]);
     }
 

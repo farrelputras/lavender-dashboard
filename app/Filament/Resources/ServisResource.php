@@ -21,7 +21,7 @@ class ServisResource extends Resource
 
     public static function getModel(): string
     {
-        return \App\Models\Kendaraan::class;
+        return \App\Models\Servis::class;
     }
 
     public static function getModelLabel(): string
@@ -38,7 +38,7 @@ class ServisResource extends Resource
     {
         return 'Bisnis & Keuangan';
     }
-    
+
     public static function form(Form $form): Form
     {
         return $form

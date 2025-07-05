@@ -11,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Forms\FormsComponent;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -23,7 +24,7 @@ class PenyewaResource extends Resource
 
     public static function getModel(): string
     {
-        return \App\Models\Kendaraan::class;
+        return \App\Models\Penyewa::class;
     }
 
     public static function getModelLabel(): string
@@ -45,7 +46,7 @@ class PenyewaResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('id')
+                Forms\Components\TextInput::make('nama')
                     ->label('Nama Penyewa')
                     ->required(),
 
@@ -101,7 +102,19 @@ class PenyewaResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('nama')
+                    ->label('Nama Penyewa')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('no_telp')
+                    ->label('No. Telp')
+                    ->prefix('+62')
+                    ->searchable(),
+
+                TextColumn::make('alamat')
+                    ->label('Alamat')
+                    ->searchable(),
             ])
             ->filters([
                 //
