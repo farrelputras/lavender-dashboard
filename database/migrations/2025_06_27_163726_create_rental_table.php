@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('penyewa_id')->constrained('penyewa');
             $table->foreignId('kendaraan_id')->constrained('kendaraan');
-            $table->dateTime('rental_mulai');
-            $table->dateTime('rental_selesai')->nullable();
+            $table->dateTime('tanggal_mulai');
+            $table->dateTime('tanggal_selesai')->nullable();
             $table->unsignedBigInteger('total_biaya')->nullable();
             $table->enum('status', ['BERJALAN', 'SELESAI'])->default('BERJALAN');
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

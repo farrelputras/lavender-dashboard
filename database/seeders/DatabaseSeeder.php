@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Kendaraan;
+use App\Models\Penyewa;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -32,6 +33,16 @@ class DatabaseSeeder extends Seeder
             'kilometer' => 16000,
             'gambar' => 'fotokendaraan/vario160.jpg',
             'status' => 'TERSEDIA',
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        Penyewa::insert([
+            'nama' => 'Farrel',
+            'alamat' => 'Jl. Janti Barat',
+            'no_telp' => '08113663727',
+            'jenis_kelamin' => 'L',
+            'jaminan1' => 'KTP',
             'created_at' => now(),
             'updated_at' => now()
         ]);
