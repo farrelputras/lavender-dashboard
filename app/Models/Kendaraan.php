@@ -14,6 +14,16 @@ class Kendaraan extends Model
 
     protected $table = 'kendaraan';
 
+    protected $fillable = [
+        'nopol',
+        'jenis',
+        'merk',
+        'warna',
+        'tahun',
+        'harga_sewa',
+        'status',
+    ];
+
     public function rental()
     {
         return $this->hasMany(Rental::class);

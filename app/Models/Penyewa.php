@@ -13,6 +13,16 @@ class Penyewa extends Model
 
     protected $table = 'penyewa';
 
+    protected $fillable = [
+        'nama',
+        'alamat',
+        'no_telp',
+        'asal',
+        'jenis_kelamin',
+        'jaminan1',
+        'jaminan2',
+    ];
+
     public function rental()
     {
         return $this->hasMany(Rental::class);

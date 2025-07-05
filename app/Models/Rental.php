@@ -15,6 +15,21 @@ class Rental extends Model
 
     protected $table = 'rental';
 
+    protected $fillable = [
+        'penyewa_id',
+        'kendaraan_id',
+        'tanggal_mulai',
+        'tanggal_selesai',
+        'total_biaya',
+        'status',
+        'notes',
+    ];
+
+    protected $casts = [
+        'tanggal_mulai' => 'datetime',
+        'tanggal_selesai' => 'datetime',
+    ];
+
     public function penyewa()
     {
         return $this->belongsTo(Penyewa::class);
