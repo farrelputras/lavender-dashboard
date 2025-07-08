@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
         Penyewa::insert([
             'nama' => 'Farrel',
             'alamat' => 'Jl. Janti Barat',
-            'no_telp' => '08113663727',
+            'no_telp' => '8113663727',
             'jenis_kelamin' => 'L',
             'jaminan1' => 'KTP',
             'created_at' => now(),

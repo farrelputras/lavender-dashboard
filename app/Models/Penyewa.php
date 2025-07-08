@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 use App\Models\Rental;
 
@@ -23,7 +24,7 @@ class Penyewa extends Model
         'jaminan2',
     ];
 
-    public function rental()
+    public function rental(): HasMany
     {
         return $this->hasMany(Rental::class);
     }

@@ -4,10 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 use App\Models\Penyewa;
 use App\Models\Kendaraan;
-use App\Models\Pembayaran;
+use App\Models\Transaksi;
+
+use App\Enums\StatusBayar;
+use App\Enums\StatusRental;
 
 class Rental extends Model
 {
@@ -20,28 +25,32 @@ class Rental extends Model
         'kendaraan_id',
         'tanggal_mulai',
         'tanggal_selesai',
+        'biaya_dibayar',
         'total_biaya',
-        'status',
+        'status_rental',
+        'status_bayar',
         'notes',
     ];
 
     protected $casts = [
         'tanggal_mulai' => 'datetime',
         'tanggal_selesai' => 'datetime',
+        'status_rental' => StatusRental::class, // Enum Casting
+        'status_bayar' => StatusBayar::class,   // Enum Casting
     ];
 
-    public function penyewa()
+    public function penyewa(): BelongsTo
     {
         return $this->belongsTo(Penyewa::class);
     }
 
-    public function kendaraan()
+    public function kendaraan(): BelongsTo
     {
         return $this->belongsTo(Kendaraan::class);
     }
 
-    public function pembayaran()
+    public function transaksi(): HasMany
     {
-        return $this->hasOne(Pembayaran::class);
+        return $this->hasMany(Transaksi::class);
     }
 }

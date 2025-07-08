@@ -6,28 +6,27 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-use App\Models\Kendaraan;
+use App\Models\Rental;
 
-class Servis extends Model
+class Transaksi extends Model
 {
     use HasFactory;
 
-    protected $table = 'servis';
+    protected $table = 'transaksi';
 
     protected $fillable = [
-        'kendaraan_id',
-        'deskripsi',
-        'tanggal_servis',
-        'biaya',
+        'rental_id',
+        'nominal_transaksi',
+        'tanggal_transaksi',
         'keterangan',
     ];
 
     protected $casts = [
-        'tanggal_servis' => 'date',
+        'tanggal_transaksi' => 'date',
     ];
 
-    public function kendaraan(): BelongsTo
+    public function rental(): BelongsTo
     {
-        return $this->belongsTo(Kendaraan::class);
+        return $this->belongsTo(Rental::class);
     }
 }

@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 use App\Models\Rental;
 use App\Models\Servis;
+
+use App\Enums\StatusKendaraan;
 
 class Kendaraan extends Model
 {
@@ -17,19 +20,26 @@ class Kendaraan extends Model
     protected $fillable = [
         'nopol',
         'jenis',
-        'merk',
-        'warna',
+        'model',
         'tahun',
-        'harga_sewa',
+        'kilometer',
+        'gambar',
+        // 'harga_6jam',
+        // 'harga_12jam',
+        // 'harga_24jam',
         'status',
     ];
 
-    public function rental()
+    protected $casts = [
+        'status' => StatusKendaraan::class, // Eloquent Enum Casting
+    ];
+
+    public function rental(): HasMany
     {
         return $this->hasMany(Rental::class);
     }
 
-    public function servis()
+    public function servis(): HasMany
     {
         return $this->hasMany(Servis::class);
     }
