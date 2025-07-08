@@ -21,26 +21,9 @@ class PenyewaResource extends Resource
     protected static ?string $model = Penyewa::class;
 
     protected static ?string $navigationIcon = 'heroicon-s-users';
-
-    public static function getModel(): string
-    {
-        return \App\Models\Penyewa::class;
-    }
-
-    public static function getModelLabel(): string
-    {
-        return 'Penyewa';
-    }
-
-    public static function getPluralModelLabel(): string
-    {
-        return 'Penyewa';
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Informasi & Data';
-    }
+    protected static ?string $navigationGroup = 'Informasi & Data';
+    protected static ?string $modelLabel = 'Penyewa';
+    protected static ?string $pluralModelLabel = 'Penyewa';
 
     public static function form(Form $form): Form
     {
@@ -115,6 +98,14 @@ class PenyewaResource extends Resource
                 TextColumn::make('alamat')
                     ->label('Alamat')
                     ->searchable(),
+
+                TextColumn::make('hutang')
+                    ->label('Hutang')
+                    ->numeric()
+                    ->prefix('Rp ')
+                    ->default(0)
+                    ->sortable()
+                    ->color(fn($state) => $state > 0 ? 'danger' : 'default'),
             ])
             ->filters([
                 //

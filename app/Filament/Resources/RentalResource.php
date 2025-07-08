@@ -2,11 +2,15 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\StatusBayar;
+use App\Enums\StatusKendaraan;
+use App\Enums\StatusRental;
 use App\Filament\Resources\RentalResource\Pages;
 use App\Filament\Resources\RentalResource\RelationManagers;
 use App\Models\Rental;
 use Dom\Text;
 use Filament\Forms;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -18,32 +22,16 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\HtmlString;
+use Illuminate\Validation\Rules\Exists;
 
 class RentalResource extends Resource
 {
     protected static ?string $model = Rental::class;
 
     protected static ?string $navigationIcon = 'heroicon-s-list-bullet';
-
-    public static function getModel(): string
-    {
-        return \App\Models\Rental::class;
-    }
-
-    public static function getModelLabel(): string
-    {
-        return 'Rental';
-    }
-
-    public static function getPluralModelLabel(): string
-    {
-        return 'Rental';
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Bisnis & Keuangan';
-    }
+    protected static ?string $navigationGroup = 'Bisnis & Keuangan';
+    protected static ?string $modelLabel = 'Rental';
+    protected static ?string $pluralModelLabel = 'Rental';
 
     public static function form(Form $form): Form
     {
@@ -51,22 +39,73 @@ class RentalResource extends Resource
             ->schema([
                 Forms\Components\Select::make('penyewa_id')
                     ->label('Penyewa')
-                    ->relationship('penyewa', 'nama') // adjust if the name column is different
+                    ->relationship('penyewa', 'nama')
                     ->searchable()
+                    ->preload()
                     ->required(),
 
                 Forms\Components\Select::make('kendaraan_id')
                     ->label('Kendaraan')
-                    ->relationship('kendaraan', 'nopol') // or use 'model'
+                    ->relationship(
+                        name: 'kendaraan',
+                        titleAttribute: 'nopol',
+
+                        // // This modifies the query that POPULATES THE DROPDOWN
+                        // modifyQueryUsing: fn(Builder $query) => $query->where('status', 'TERSEDIA')
+                    )
+                    // ->exists(modifyRuleUsing: function (Exists $rule) {
+                    //     return $rule->where('status', StatusKendaraan::TERSEDIA);
+                    // })
                     ->searchable()
+                    ->preload()
                     ->required(),
 
                 Forms\Components\DateTimePicker::make('tanggal_mulai')
-                    ->label('Mulai Sewa')
-                    ->required(),
+                    ->label('Tanggal/Waktu Mulai Sewa')
+                    ->seconds(false)
+                    ->displayFormat('d F Y H:i')
+                    ->required()
+                    ->default(now()),
 
                 Forms\Components\DateTimePicker::make('tanggal_selesai')
-                    ->label('Rencana Selesai Sewa'),
+                    ->label('Rencana Selesai Sewa')
+                    ->seconds(false)
+                    ->displayFormat('d F Y H:i'),
+
+                Grid::make(3)
+                    ->schema([
+                        Forms\Components\TextInput::make('biaya_dibayar')
+                            ->label('DP (jika ada)')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->default(0),
+
+                        Forms\Components\TextInput::make('total_biaya')
+                            ->label('Total Biaya')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->default(0),
+
+                        Forms\Components\Radio::make('status_bayar')
+                            ->label('Status Pembayaran')
+                            ->options(StatusBayar::class)
+                            ->inline()
+                            ->inlineLabel(false)
+                            ->default('PENDING')
+                            ->required(),
+                    ]),
+
+                Forms\Components\Radio::make('status_rental')
+                    ->label('Status Rental')
+                    ->options(StatusRental::class)
+                    ->default('BERJALAN')
+                    ->hidden(),
+
+                Forms\Components\Textarea::make('notes')
+                    ->label('Catatan')
+                    ->placeholder('Tulis catatan disini')
+                    ->rows(3)
+                    ->columnSpan('full'),
             ]);
     }
 
@@ -74,97 +113,14 @@ class RentalResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('ID Sewa')
-                    ->sortable()
-                    ->searchable(),
-
-                TextColumn::make('penyewa.nama')
-                    ->label('Penyewa')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('kendaraan.model')
-                    ->label('Kendraan')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('kendaraan.nopol')
-                    ->label('Plat Nomor')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('tanggal_mulai')
-                    ->label('Mulai Sewa')
-                    ->dateTime()
-                    ->sortable(),
-
-                TextColumn::make('status')
-                    ->label('Status')
-                    ->badge()
-                    ->color(fn($state) => match ($state) {
-                        'BERJALAN' => 'warning',
-                        'SELESAI' => 'success',
-                    })
-                    ->sortable(),
-            ])
-            ->filters([
                 //
             ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('status_rental')
+                    ->options(StatusRental::class),
+            ])
             ->actions([
-                Action::make('selesaikan_rental')
-                    ->label('SELESAIKAN')
-                    ->visible(fn(Rental $record): bool => $record->status === 'BERJALAN')
-                    ->form([
-                        Forms\Components\Placeholder::make('rental_summary')
-                            ->label('Ringkasan')
-                            ->content(function (Rental $record): HtmlString {
-                                // Ambil informasi penyewa dan kendaraan
-                                $penyewaInfo = "Penyewa: " . $record->penyewa->nama;
-                                $kendaraanInfo = "Kendaraan: " . $record->kendaraan->nopol;
-
-                                // Atur locale ke Bahasa Indonesia dan format tanggal/waktu
-                                $tanggalMulai = $record->tanggal_mulai->locale('id_ID');
-                                $tanggalSewa = "Tanggal Sewa: " . $tanggalMulai->translatedFormat('j F Y');
-                                $waktuSewa = "Waktu Mulai Sewa: " . $tanggalMulai->format('H:i');
-
-                                // Gabungkan semua informasi menjadi satu string dengan tag <br> untuk baris baru
-                                $fullstring = $penyewaInfo . "<br>" . $kendaraanInfo . "<br><br>" . $tanggalSewa . "<br>" . $waktuSewa;
-
-                                return new HtmlString($fullstring);
-                            }),
-
-                        //User Input                        
-                        Forms\Components\DateTimePicker::make('tanggal_selesai')
-                            ->label('Tanggal Selesai Sewa')
-                            ->required(),
-
-                        Forms\Components\TextInput::make('total_biaya')
-                            ->label('Total Biaya')
-                            ->numeric()
-                            ->prefix('Rp')
-                            ->required(),
-
-                        Forms\Components\Textarea::make('notes')
-                            ->label('Catatan')
-                            ->placeholder('Tulis catatan disini')
-                            ->rows(3),
-                    ])
-                    ->action(function (Rental $record, array $data) {
-                        //Update the rental status to 'SELESAI'
-                        $record->update([
-                            'tanggal_selesai' => $data['tanggal_selesai'],
-                            'total_biaya' => $data['total_biaya'],
-                            'notes' => $data['notes'],
-                            'status' => 'SELESAI',
-                        ]);
-
-                        Notification::make()
-                            ->title('Rental Selesai')
-                            ->body("Kendaraan {$record->kendaraan->nopol} saat ini tersedia.")
-                            ->success()
-                            ->send();
-                    })
+                //
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

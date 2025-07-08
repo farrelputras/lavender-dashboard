@@ -18,26 +18,9 @@ class ServisResource extends Resource
     protected static ?string $model = Servis::class;
 
     protected static ?string $navigationIcon = 'fas-gear';
-
-    public static function getModel(): string
-    {
-        return \App\Models\Servis::class;
-    }
-
-    public static function getModelLabel(): string
-    {
-        return 'Servis';
-    }
-
-    public static function getPluralModelLabel(): string
-    {
-        return 'Servis';
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Bisnis & Keuangan';
-    }
+    protected static ?string $navigationGroup = 'Bisnis & Keuangan';
+    protected static ?string $modelLabel = 'Servis';
+    protected static ?string $pluralModelLabel = 'Servis';
 
     public static function form(Form $form): Form
     {

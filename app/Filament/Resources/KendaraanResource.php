@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\KendaraanResource\Pages;
+use App\Enums\StatusKendaraan;
 use App\Filament\Resources\KendaraanResource\RelationManagers;
 use App\Models\Kendaraan;
 use Dom\Text;
@@ -22,26 +23,9 @@ class KendaraanResource extends Resource
     protected static ?string $model = Kendaraan::class;
 
     protected static ?string $navigationIcon = 'fas-motorcycle';
-
-    public static function getModel(): string
-    {
-        return \App\Models\Kendaraan::class;
-    }
-
-    public static function getModelLabel(): string
-    {
-        return 'Kendaraan';
-    }
-
-    public static function getPluralModelLabel(): string
-    {
-        return 'Kendaraan';
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Informasi & Data';
-    }
+    protected static ?string $navigationGroup = 'Informasi & Data';
+    protected static ?string $modelLabel = 'Kendaraan';
+    protected static ?string $pluralModelLabel = 'Kendaraan';
 
     public static function form(Form $form): Form
     {
@@ -86,11 +70,7 @@ class KendaraanResource extends Resource
                 Forms\Components\Select::make('status')
                     ->label('Status Kendaraan')
                     ->required()
-                    ->options([
-                        'TERSEDIA' => 'Tersedia',
-                        'DISEWA' => 'Disewa',
-                        'PERBAIKAN' => 'Perbaikan',
-                    ])
+                    ->options(StatusKendaraan::class)
                     ->default('TERSEDIA'),
             ]);
     }
@@ -113,9 +93,9 @@ class KendaraanResource extends Resource
                     ->label('Status')
                     ->badge()
                     ->color(fn($state) => match ($state) {
-                        'TERSEDIA' => 'success',
-                        'DISEWA' => 'warning',
-                        'PERBAIKAN' => 'danger',
+                        StatusKendaraan::TERSEDIA => 'success',
+                        StatusKendaraan::DISEWA => 'warning',
+                        StatusKendaraan::PERBAIKAN => 'danger',
                     })
                     ->sortable(),
             ])
