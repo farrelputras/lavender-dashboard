@@ -14,7 +14,10 @@ return new class extends Migration
         Schema::create('servis', function (Blueprint $table) {
             $table->id();
             $table->foreignId('kendaraan_id')->constrained('kendaraan');
-            $table->text('deskripsi');
+            $table->string('deskripsi')->nullable();
+            $table->unsignedBigInteger('kilometer_servis');
+            $table->string('tipe_servis');
+            $table->string('bengkel');
             $table->date('tanggal_servis');
             $table->unsignedBigInteger('biaya')->nullable();
             $table->timestamps();

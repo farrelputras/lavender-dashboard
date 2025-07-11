@@ -20,6 +20,7 @@ return new class extends Migration
             $table->enum('jenis_kelamin', ['L', 'P']);
             $table->enum('jaminan1', ['KTP', 'KTM', 'SIM', 'LAINNYA']);
             $table->enum('jaminan2', ['KTP', 'KTM', 'SIM', 'LAINNYA'])->nullable();
+            $table->string('notes')->nullable();
             $table->timestamps();
         });
     }

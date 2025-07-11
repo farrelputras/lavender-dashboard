@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Kendaraan;
 use App\Models\Penyewa;
 use App\Models\User;
+use App\Models\Servis;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -31,7 +32,10 @@ class DatabaseSeeder extends Seeder
             'model' => 'Honda Vario 160',
             'tahun' => 2022,
             'kilometer' => 16000,
-            'gambar' => 'fotokendaraan/vario160.jpg',
+            // 'gambar' => 'fotokendaraan/vario160.jpg',
+            'harga_6jam' => 50000,
+            'harga_12jam' => 70000,
+            'harga_24jam' => 100000,
             'status' => 'TERSEDIA',
             'created_at' => now(),
             'updated_at' => now()
@@ -45,6 +49,18 @@ class DatabaseSeeder extends Seeder
             'jaminan1' => 'KTP',
             'created_at' => now(),
             'updated_at' => now()
+        ]);
+
+        Servis::insert([
+            'kendaraan_id' => 1,
+            'deskripsi' => 'ganti oli',
+            'kilometer_servis' => 13000,
+            'tipe_servis' => 'OLI',
+            'bengkel' => 'om yopi',
+            'tanggal_servis' => '2025-03-07',
+            'created_at' => now(),
+            'updated_at' => now()
+
         ]);
     }
 }

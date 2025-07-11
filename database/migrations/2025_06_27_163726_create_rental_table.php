@@ -21,7 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('total_biaya')->nullable();
             $table->enum('status_rental', ['BERJALAN', 'SELESAI'])->default('BERJALAN');
             $table->enum('status_bayar', ['LUNAS', 'PENDING'])->default('PENDING');
-            $table->text('notes')->nullable();
+            $table->string('notes')->nullable();
             $table->timestamps();
         });
     }

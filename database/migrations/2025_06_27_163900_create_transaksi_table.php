@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('rental_id')->constrained('rental')->onDelete('cascade');
             $table->unsignedBigInteger('nominal_transaksi');
             $table->date('tanggal_transaksi');
-            $table->string('keterangan')->nullable();
+            $table->string('notes')->nullable();
             $table->timestamps();
         });
     }

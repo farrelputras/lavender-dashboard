@@ -13,16 +13,21 @@ return new class extends Migration
     {
         Schema::create('kendaraan', function (Blueprint $table) {
             $table->id();
-            $table->string('nopol')->unique();
             $table->enum('jenis', ['MOBIL', 'MOTOR']);
+            $table->string('nopol')->unique();
             $table->string('model');
             $table->year('tahun');
-            $table->unsignedBigInteger('kilometer')->nullable();
+            $table->date('tgl_pajak')->nullable();
+            $table->string('stnk_nama')->nullable();
+            $table->string('no_gps')->nullable();
+            $table->string('imei')->nullable();
+            $table->unsignedBigInteger('kilometer')->default(0);
             $table->string('gambar')->nullable();
-            // $table->unsignedBigInteger('harga_6jam');
-            // $table->unsignedBigInteger('harga_12jam');
-            // $table->unsignedBigInteger('harga_24jam');
+            $table->unsignedBigInteger('harga_6jam');
+            $table->unsignedBigInteger('harga_12jam');
+            $table->unsignedBigInteger('harga_24jam');
             $table->enum('status', ['TERSEDIA', 'DISEWA', 'PERBAIKAN'])->default('TERSEDIA');
+            $table->string('notes')->nullable();
             $table->timestamps();
         });
     }
