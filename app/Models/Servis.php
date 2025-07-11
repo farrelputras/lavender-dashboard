@@ -17,6 +17,9 @@ class Servis extends Model
     protected $fillable = [
         'kendaraan_id',
         'deskripsi',
+        'kilometer_servis',
+        'tipe_servis',
+        'bengkel',
         'tanggal_servis',
         'biaya',
         'keterangan',
