@@ -9,6 +9,7 @@ use App\Models\Rental;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -38,7 +39,7 @@ class TransaksiResource extends Resource
                             ->relationship(
                                 name: 'rental',
                                 titleAttribute: 'id',
-                                modifyQueryUsing: fn(Builder $query) => $query->where('status', 'BERJALAN')
+                                // modifyQueryUsing: fn(Builder $query) => $query->where('status', 'BERJALAN')
                             )
                             ->searchable()
                             ->required()
@@ -117,6 +118,11 @@ class TransaksiResource extends Resource
                     ->required()
                     ->placeholder('Pilih tanggal bayar')
                     ->default(now()),
+
+                TextInput::make('notes')
+                    ->label('Catatan')
+                    ->placeholder('Tulis catatan disini')
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -149,14 +155,9 @@ class TransaksiResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('ID Transaksi')
-                    ->numeric()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('rental.id')
-                    ->label('ID Rental')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('tanggal_transaksi')
+                    ->label('Tanggal Transaksi')
+                    ->date('j M Y')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('rental.penyewa.nama')
@@ -170,10 +171,15 @@ class TransaksiResource extends Resource
                     ->prefix('Rp ')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('tanggal_transaksi')
-                    ->label('Tanggal Transaksi')
-                    ->date()
-                    ->sortable(),
+                TextColumn::make('rental_id')
+                    ->label('ID Rental')
+                    ->sortable()
+                    ->searchable(),
+
+                TextColumn::make('notes')
+                    ->label('Notes')
+                    ->wrap(),
+
             ])
             ->filters([
                 //
@@ -182,9 +188,9 @@ class TransaksiResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                // Tables\Actions\BulkActionGroup::make([
+                //     Tables\Actions\DeleteBulkAction::make(),
+                // ]),
             ]);
     }
 

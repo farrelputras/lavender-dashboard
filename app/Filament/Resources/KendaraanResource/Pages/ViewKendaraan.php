@@ -4,10 +4,12 @@ namespace App\Filament\Resources\KendaraanResource\Pages;
 
 use App\Filament\Resources\KendaraanResource;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Contracts\Support\Htmlable;
+use Filament\Forms\Form;
 
-class EditKendaraan extends EditRecord
+
+class ViewKendaraan extends ViewRecord
 {
     protected static string $resource = KendaraanResource::class;
 
@@ -19,10 +21,15 @@ class EditKendaraan extends EditRecord
         return $record->nopol;
     }
 
-    protected function getHeaderActions(): array
+    public function form(Form $form): Form
     {
-        return [
-            Actions\DeleteAction::make(),
-        ];
+        return parent::form($form)->disabled();
     }
+
+    // protected function getHeaderActions(): array
+    // {
+    //     return [
+    //         Actions\EditAction::make(),
+    //     ];
+    // }
 }
