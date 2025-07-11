@@ -46,10 +46,15 @@ class ListRentals extends ListRecords
             'pesanan' => Tab::make('Semua Pesanan'),
 
             'pesanan_aktif' => Tab::make('Pesanan Aktif')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('status_rental', 'BERJALAN')),
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('status_rental', 'BERJALAN'))
+                ->badge(Rental::query()->where('status_rental', 'BERJALAN')->count()),
 
             'pembayaran' => Tab::make('Pembayaran')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('status_rental', 'SELESAI')),
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('status_rental', 'SELESAI'))
+                ->badge(Rental::query()->where([
+                    'status_rental' => 'SELESAI',
+                    'status_bayar' => 'PENDING'
+                ])->count()),
         ];
     }
 
@@ -176,12 +181,14 @@ class ListRentals extends ListRecords
                             ->schema([
                                 Forms\Components\DateTimePicker::make('tanggal_selesai')
                                     ->label('Tanggal/Waktu Selesai Sewa')
+                                    ->default(fn(Rental $record) => $record->tanggal_selesai)
                                     ->required(),
 
                                 Forms\Components\TextInput::make('total_biaya')
                                     ->label('Total Biaya')
                                     ->numeric()
                                     ->prefix('Rp')
+                                    ->default(fn(Rental $record) => $record->total_biaya)
                                     ->required(),
 
                                 Forms\Components\Textarea::make('notes')
@@ -302,7 +309,12 @@ class ListRentals extends ListRecords
                                     ->numeric()
                                     ->prefix('Rp')
                                     ->required(),
-                            ])
+                            ]),
+
+                        Forms\Components\TextInput::make('keterangan')
+                            ->label('Catatan')
+                            ->placeholder('Tulis catatan disini')
+                            ->columnSpanFull(),
                     ])
                     ->action(function (Rental $record, array $data) {
                         $record->transaksi()->create($data);
