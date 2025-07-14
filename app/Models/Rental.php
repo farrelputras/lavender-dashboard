@@ -25,6 +25,8 @@ class Rental extends Model
         'kendaraan_id',
         'tanggal_mulai',
         'tanggal_selesai',
+        'bbm_awal',
+        'bbm_kembali',
         'biaya_dibayar',
         'total_biaya',
         'status_rental',

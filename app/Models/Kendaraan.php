@@ -22,12 +22,19 @@ class Kendaraan extends Model
         'jenis',
         'model',
         'tahun',
+        'tgl_pajak',
+        'stnk_nama',
+        'no_gps',
+        'imei',
         'kilometer',
         'gambar',
-        // 'harga_6jam',
-        // 'harga_12jam',
-        // 'harga_24jam',
+        'harga_6jam',
+        'harga_12jam',
+        'harga_24jam',
+        'bbm',
+        'bbm_per_kotak',
         'status',
+        'notes',
     ];
 
     protected $casts = [

@@ -21,7 +21,10 @@ class Penyewa extends Model
         'asal',
         'jenis_kelamin',
         'jaminan1',
+        'foto_jaminan1',
         'jaminan2',
+        'foto_jaminan2',
+        'notes',
     ];
 
     public function rental(): HasMany

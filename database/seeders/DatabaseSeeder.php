@@ -32,10 +32,12 @@ class DatabaseSeeder extends Seeder
             'model' => 'Honda Vario 160',
             'tahun' => 2022,
             'kilometer' => 16000,
-            // 'gambar' => 'fotokendaraan/vario160.jpg',
+            'gambar' => 'fotoKendaraan/vario160.png',
             'harga_6jam' => 50000,
             'harga_12jam' => 70000,
             'harga_24jam' => 100000,
+            'bbm' => 5,
+            'bbm_per_kotak' => 13000,
             'status' => 'TERSEDIA',
             'created_at' => now(),
             'updated_at' => now()
@@ -47,6 +49,7 @@ class DatabaseSeeder extends Seeder
             'no_telp' => '8113663727',
             'jenis_kelamin' => 'L',
             'jaminan1' => 'KTP',
+            'foto_jaminan1' => 'fotoJaminan/KTP.jpg',
             'created_at' => now(),
             'updated_at' => now()
         ]);

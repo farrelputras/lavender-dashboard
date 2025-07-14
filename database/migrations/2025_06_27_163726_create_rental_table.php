@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreignId('kendaraan_id')->constrained('kendaraan');
             $table->dateTime('tanggal_mulai');
             $table->dateTime('tanggal_selesai')->nullable();
+            $table->unsignedBigInteger('bbm_awal');
+            $table->unsignedBigInteger('bbm_kembali')->nullable();
             $table->unsignedBigInteger('biaya_dibayar')->nullable();
             $table->unsignedBigInteger('total_biaya')->nullable();
             $table->enum('status_rental', ['BERJALAN', 'SELESAI'])->default('BERJALAN');

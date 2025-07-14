@@ -26,6 +26,8 @@ return new class extends Migration
             $table->unsignedBigInteger('harga_6jam');
             $table->unsignedBigInteger('harga_12jam');
             $table->unsignedBigInteger('harga_24jam');
+            $table->unsignedBigInteger('bbm')->nullable();
+            $table->unsignedBigInteger('bbm_per_kotak')->nullable();
             $table->enum('status', ['TERSEDIA', 'DISEWA', 'PERBAIKAN'])->default('TERSEDIA');
             $table->string('notes')->nullable();
             $table->timestamps();
