@@ -7,12 +7,15 @@ use App\Enums\StatusKendaraan;
 use App\Enums\StatusRental;
 use App\Filament\Resources\RentalResource\Pages;
 use App\Filament\Resources\RentalResource\RelationManagers;
+use App\Models\Kendaraan;
 use App\Models\Rental;
 use Dom\Text;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -21,6 +24,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Actions\Action;
 use Filament\Notifications\Notification;
+use Illuminate\Cache\Events\RetrievingKey;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rules\Exists;
 
@@ -58,7 +62,8 @@ class RentalResource extends Resource
                     // })
                     ->searchable()
                     ->preload()
-                    ->required(),
+                    ->required()
+                    ->live(),
 
                 Forms\Components\DateTimePicker::make('tanggal_mulai')
                     ->label('Tanggal/Waktu Mulai Sewa')
@@ -72,7 +77,7 @@ class RentalResource extends Resource
                     ->seconds(false)
                     ->displayFormat('d F Y H:i'),
 
-                Grid::make(3)
+                Grid::make(4)
                     ->schema([
                         Forms\Components\TextInput::make('biaya_dibayar')
                             ->label('DP (jika ada)')
@@ -85,6 +90,26 @@ class RentalResource extends Resource
                             ->numeric()
                             ->prefix('Rp')
                             ->default(0),
+
+                        Forms\Components\TextInput::make('bbm_awal')
+                            ->label('BBM Awal')
+                            ->numeric()
+                            ->required()
+                            ->suffix('Kotak')
+                            ->helperText(
+                                function (Get $get): string {
+                                    $kendaraanId = $get('kendaraan_id');
+                                    if (!$kendaraanId) return '';
+
+                                    $kendaraan = Kendaraan::find($kendaraanId);
+                                    if (!$kendaraan) return '';
+
+                                    $historyBbm = $kendaraan->bbm;
+                                    if ($historyBbm != 0) {
+                                        return 'Terakhir kali BBM: ' . $historyBbm . ' kotak.';
+                                    } else return '';
+                                }
+                            ),
 
                         Forms\Components\Radio::make('status_bayar')
                             ->label('Status Pembayaran')
@@ -141,7 +166,7 @@ class RentalResource extends Resource
         return [
             'index' => Pages\ListRentals::route('/'),
             'create' => Pages\CreateRental::route('/create'),
-            'edit' => Pages\EditRental::route('/{record}/edit'),
+            // 'edit' => Pages\EditRental::route('/{record}/edit'),
         ];
     }
 }

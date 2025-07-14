@@ -13,6 +13,7 @@ use Filament\Tables\Columns\TextColumn;
 use App\Models\Rental;
 use App\Enums\StatusRental;
 use App\Enums\StatusBayar;
+use App\Enums\StatusKendaraan;
 use Dom\Text;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
@@ -23,9 +24,13 @@ use Filament\Tables\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Get;
+use App\Models\Kendaraan;
+use Illuminate\Support\Facades\DB;
 
 use Filament\Actions\Action as ModalAction;
 use Illuminate\View\View;
+use Carbon\Carbon;
 
 class ListRentals extends ListRecords
 {
@@ -60,15 +65,14 @@ class ListRentals extends ListRecords
 
     public function table(Table $table): Table
     {
-        $activeTab = $this->activeTab;
 
         return $table
             ->columns([
                 // All Tabs
-                TextColumn::make('id')
-                    ->label('ID Rental')
-                    ->sortable()
-                    ->searchable(),
+                // TextColumn::make('id')
+                //     ->label('ID Rental')
+                //     ->sortable()
+                //     ->searchable(),
 
                 TextColumn::make('penyewa.nama')
                     ->label('Penyewa')
@@ -108,13 +112,6 @@ class ListRentals extends ListRecords
                     ->prefix('Rp ')
                     ->visible(fn(): bool => in_array($this->activeTab, ['pembayaran'])),
 
-                TextColumn::make('biaya_dibayar')
-                    ->label('Sudah Dibayar')
-                    ->numeric()
-                    ->prefix('Rp ')
-                    ->color(fn($state) => $state > 0 ? 'success' : 'danger')
-                    ->visible(fn(): bool => in_array($this->activeTab, ['pembayaran'])),
-
                 TextColumn::make('sisa_biaya')
                     ->label('Sisa Tagihan')
                     ->numeric()
@@ -127,7 +124,7 @@ class ListRentals extends ListRecords
                     ->visible(fn(): bool => in_array($this->activeTab, ['pembayaran'])),
 
                 TextColumn::make('status_bayar')
-                    ->label('Status Pembayaran')
+                    ->label('Status Bayar')
                     ->badge()
                     ->color(fn($state) => match ($state) {
                         StatusBayar::LUNAS => 'success',
@@ -149,40 +146,164 @@ class ListRentals extends ListRecords
                     // RULE 1: Only show if the rental status is 'BERJALAN'
                     ->visible(fn(Rental $record): bool => $record->status_rental === StatusRental::BERJALAN)
                     ->form([
-                        Forms\Components\Section::make('Ringkasan Rental')
-                            ->description('Cek kembali informasi rental sebelum menyelesaikan.')
-                            ->columns(2)
+                        Forms\Components\Grid::make(3)
                             ->schema([
-                                Forms\Components\TextInput::make('penyewa.nama')
-                                    ->label('Nama Penyewa')
-                                    ->default(fn(Rental $record): string => $record->penyewa->nama)
-                                    ->disabled(),
+                                //Left Side
+                                Forms\Components\Section::make('Ringkasan Rental')
+                                    ->columnSpan(2)
+                                    ->description('Cek kembali informasi rental sebelum menyelesaikan.')
+                                    ->columns(2)
+                                    ->schema([
+                                        Forms\Components\TextInput::make('penyewa.nama')
+                                            ->label('Nama Penyewa')
+                                            ->default(fn(Rental $record): string => $record->penyewa->nama)
+                                            ->disabled(),
 
-                                Forms\Components\TextInput::make('kendaraan.nopol')
-                                    ->label('Plat Nomor')
-                                    ->default(fn(Rental $record): string => $record->kendaraan->nopol)
-                                    ->disabled(),
+                                        Forms\Components\TextInput::make('kendaraan.nopol')
+                                            ->label('Kendaraan')
+                                            ->default(fn(Rental $record): string => $record->kendaraan->nopol)
+                                            ->disabled(),
 
-                                Forms\Components\DateTimePicker::make('tanggal_mulai')
-                                    ->label('Tanggal/Waktu Mulai Sewa')
-                                    ->default(fn(Rental $record) => $record->tanggal_mulai)
-                                    ->disabled(),
+                                        Forms\Components\DateTimePicker::make('tanggal_mulai')
+                                            ->label('Tgl/Wkt Mulai Sewa')
+                                            ->default(fn(Rental $record) => $record->tanggal_mulai)
+                                            ->seconds(false)
+                                            ->displayFormat('d F Y H:i')
+                                            ->disabled(),
 
-                                Forms\Components\Placeholder::make('kalkulasi_biaya')
-                                    ->label('Kalkulasi Biaya')
-                                    // ->content(function (Rental $record): string {
+                                        Forms\Components\TextInput::make('bbm_awal')
+                                            ->label('BBM Awal')
+                                            ->default(fn(Rental $record) => $record->bbm_awal)
+                                            ->suffix('Kotak')
+                                            ->disabled(),
+                                    ]),
 
-                                    // })
-                                    ->live(),
+                                Forms\Components\Section::make('Kalkulasi Biaya')
+                                    ->columnSpan(1)
+                                    ->schema([
+                                        Forms\Components\Placeholder::make('Durasi')
+                                            ->content(function (Get $get, Rental $record): string {
+
+                                                $startDate = $record->tanggal_mulai;
+                                                $endDate = $get('tanggal_selesai');
+
+                                                if (!$startDate || !$endDate) return '0 Hari 0 Jam 0 Menit';
+
+                                                $start = Carbon::parse($startDate);
+                                                $end = Carbon::parse($endDate);
+
+                                                if ($start->gte($end)) return 'Tanggal selesai harus setelah tanggal mulai.';
+
+                                                $totalSeconds = $start->diffInSeconds($end);
+                                                $days = floor($totalSeconds / 86400);
+
+                                                $remainingSecDays = $totalSeconds % 86400;
+                                                $hours = floor($remainingSecDays / 3600);
+
+                                                $remainingSecHours = $remainingSecDays % 3600;
+                                                $minutes = floor($remainingSecHours / 60);
+
+                                                if ($hours >= 24) {
+                                                    $days++;
+                                                    $hours = $hours - 24;
+                                                }
+
+                                                return $days . ' Hari ' . $hours . ' Jam ' . $minutes . ' Menit';
+                                            }),
+
+                                        Forms\Components\Placeholder::make('biaya_basic')
+                                            ->label('Biaya Awal')
+                                            ->content(function (Get $get, Rental $record): string {
+                                                $kendaraan = $record->kendaraan;
+                                                $startDate = $record->tanggal_mulai;
+                                                $endDate = $get('tanggal_selesai');
+
+                                                if (!$startDate || !$endDate) return 'Rp 0';
+
+                                                $start = Carbon::parse($startDate);
+                                                $end = Carbon::parse($endDate);
+                                                if ($start->gte($end)) return 'Rp 0';
+
+                                                $totalSeconds = $start->diffInSeconds($end);
+                                                $days = floor($totalSeconds / 86400);
+
+                                                $remainingSecHours = $totalSeconds % 86400;
+                                                $hours = floor($remainingSecHours / 3600);
+
+                                                $remainingSecMins = $totalSeconds % 3600;
+                                                $minutes = floor($remainingSecMins / 60);
+
+                                                if ($hours >= 24) {
+                                                    $days++;
+                                                    $hours = $hours - 24;
+                                                }
+
+                                                if ($hours > 12) {
+                                                    $days++;
+                                                    $hours = $hours - 12;
+                                                }
+
+                                                if ($minutes > 30) {
+                                                    $hours++;
+                                                    $minutes = $minutes - 30;
+                                                }
+
+                                                $harga24 = $kendaraan->harga_24jam ?? 0;
+                                                $harga12 = $kendaraan->harga_12jam ?? 0;
+                                                $harga6 = $kendaraan->harga_6jam ?? 0;
+
+                                                $hourPrice = 0;
+                                                if ($hours > 12) $hourPrice = $harga24;
+                                                elseif ($hours > 6) $hourPrice = $harga12;
+                                                elseif ($hours > 0) $hourPrice = $harga6;
+
+                                                $totalSewa = ($days * $harga24) + $hourPrice;
+                                                return 'Rp ' . number_format($totalSewa, 0, ',', '.');
+                                            }),
+
+                                        Forms\Components\Placeholder::make('biaya_bensin')
+                                            ->label('Biaya Bensin')
+                                            ->content(function (Get $get, Rental $record): string {
+
+                                                $bbmAwal = $record->bbm_awal;
+                                                $bbmKembali = $get('bbm_kembali');
+                                                $kendaraan = $record->kendaraan;
+
+                                                if (is_null($bbmAwal) || is_null($bbmKembali)) {
+                                                    return 'Rp 0';
+                                                }
+
+                                                $bbmUsed = (int)$bbmAwal - (int)$bbmKembali;
+                                                $biayaBensin = $bbmUsed * $kendaraan->bbm_per_kotak;
+
+                                                return 'Rp ' . number_format($biayaBensin, 0, ',', '.');
+                                            }),
+                                    ]),
                             ]),
+
 
                         //User Input                        
                         Grid::make(2)
                             ->schema([
                                 Forms\Components\DateTimePicker::make('tanggal_selesai')
                                     ->label('Tanggal/Waktu Selesai Sewa')
+                                    ->displayFormat('d F Y H:i')
+                                    ->seconds(false)
                                     ->default(fn(Rental $record) => $record->tanggal_selesai)
+                                    ->live(onBlur: true)
                                     ->required(),
+
+                                Forms\Components\TextInput::make('bbm_kembali')
+                                    ->label('BBM Kembali')
+                                    ->numeric()
+                                    ->required()
+                                    ->suffix('Kotak')
+                                    ->live(onBlur: true),
+
+                                Forms\Components\TextInput::make('km_kembali')
+                                    ->label('KM Kembali')
+                                    ->numeric()
+                                    ->suffix('km'),
 
                                 Forms\Components\TextInput::make('total_biaya')
                                     ->label('Total Biaya')
@@ -195,9 +316,9 @@ class ListRentals extends ListRecords
                                     ->label('Catatan')
                                     ->placeholder('Tulis catatan disini')
                                     ->default(fn(Rental $record): string => $record->notes ?? '')
-                                    ->rows(3)
                                     ->columnSpanFull(),
                             ]),
+
                     ])
                     ->action(function (Rental $record, array $data) {
                         //Update the rental status to 'SELESAI'
@@ -205,48 +326,22 @@ class ListRentals extends ListRecords
                             'tanggal_selesai' => $data['tanggal_selesai'],
                             'total_biaya' => $data['total_biaya'],
                             'notes' => $data['notes'],
+                            'bbm_kembali' => $data['bbm_kembali'],
                             'status_rental' => StatusRental::SELESAI,
                         ]);
 
-                        $record->kendaraan->update(['status' => 'TERSEDIA']);
+                        $record->kendaraan->update([
+                            'status' => StatusKendaraan::TERSEDIA,
+                            'bbm' => $data['bbm_kembali'],
+                            'kilometer' => $data['km_kembali']
+                        ]);
 
                         Notification::make()
                             ->title('Rental Selesai')
                             ->body("Kendaraan {$record->kendaraan->nopol} saat ini tersedia.")
                             ->success()
                             ->send();
-                    })
-                // ->registerModalActions([
-                //     ModalAction::make('submitAndPay')
-                //         ->label('Submit + Bayar')
-                //         ->color('primary')
-                //         // This is the logic for the NEW button
-                //         ->action(function (HasForms $livewire, Rental $record, array $data) {
-
-                //             // 2. Run the "selesaikan" logic
-                //             $record->update([
-                //                 'tanggal_selesai' => $data['tanggal_selesai'],
-                //                 'total_biaya' => $data['total_biaya'],
-                //                 'notes' => $data['notes'],
-                //                 'status_rental' => StatusRental::SELESAI,
-                //             ]);
-                //             $record->kendaraan->update(['status' => 'TERSEDIA']);
-                //             Notification::make()
-                //                 ->title('Rental Selesai')
-                //                 ->body("Kendaraan {$record->kendaraan->nopol} saat ini tersedia.")
-                //                 ->success()
-                //                 ->send();
-
-                //             // 3. Programmatically open the 'bayar' modal for the same record
-                //             $livewire->mountAction('bayar', ['record' => $record->id]);
-                //         }),
-                // ])
-                // // NEW: Add the custom content area to the modal footer
-                // ->modalContentFooter(fn(Action $action): View => view(
-                //     'filament.actions.selesaikan-rental-footer',
-                //     ['action' => $action]
-                // ))
-                ,
+                    }),
 
                 // Bayar Action
                 Action::make('bayar')
@@ -258,7 +353,7 @@ class ListRentals extends ListRecords
                     ->form([
                         Section::make('Pembayaran')
                             ->description('Periksa kembali detail pembayaran.')
-                            ->columns(2)
+                            ->columns(3)
                             ->schema([
                                 Forms\Components\TextInput::make('penyewa.nama')
                                     ->label('Nama Penyewa')
@@ -266,8 +361,14 @@ class ListRentals extends ListRecords
                                     ->disabled(),
 
                                 Forms\Components\TextInput::make('kendaraan.nopol')
-                                    ->label('Plat Nomor')
+                                    ->label('Kendaraan')
                                     ->default(fn(Rental $record): string => $record->kendaraan->nopol)
+                                    ->disabled(),
+
+                                Forms\Components\DateTimePicker::make('tanggal_selesai')
+                                    ->label('Tgl/Waktu Motor Kembali')
+                                    ->seconds(false)
+                                    ->default(fn(Rental $record) => $record->tanggal_selesai)
                                     ->disabled(),
 
                                 Grid::make(3)
@@ -311,7 +412,7 @@ class ListRentals extends ListRecords
                                     ->required(),
                             ]),
 
-                        Forms\Components\TextInput::make('keterangan')
+                        Forms\Components\TextInput::make('notes')
                             ->label('Catatan')
                             ->placeholder('Tulis catatan disini')
                             ->columnSpanFull(),
