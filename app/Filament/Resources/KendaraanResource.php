@@ -82,10 +82,7 @@ class KendaraanResource extends Resource
                                                     ->minValue(1900)
                                                     ->maxValue(now()->year)
                                                     ->required(),
-                                            ]),
 
-                                        Forms\Components\Grid::make(3)
-                                            ->schema([
                                                 Forms\Components\TextInput::make('harga_6jam')
                                                     ->label('Harga 6 Jam')
                                                     ->required()
@@ -106,6 +103,13 @@ class KendaraanResource extends Resource
                                                     ->prefix('Rp ')
                                                     ->numeric()
                                                     ->default(50000),
+
+                                                Forms\Components\TextInput::make('bbm_per_kotak')
+                                                    ->label('Harga BBM Per Kotak')
+                                                    ->required()
+                                                    ->prefix('Rp ')
+                                                    ->numeric()
+                                                    ->default(5000),
                                             ]),
                                     ]),
 
