@@ -15,6 +15,10 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\View\ComponentSlot;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components;
 
 class PenyewaResource extends Resource
 {
@@ -29,55 +33,72 @@ class PenyewaResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nama')
-                    ->label('Nama Penyewa')
-                    ->required(),
+                Forms\Components\Section::make('Informasi Umum')
+                    ->columns(6)
+                    ->schema([
+                        Forms\Components\TextInput::make('nama')
+                            ->label('Nama Penyewa')
+                            ->required()
+                            ->columnSpan(2),
 
-                Forms\Components\TextInput::make('no_telp')
-                    ->label('No. Telp')
-                    ->required()
-                    ->prefix('+62'),
+                        Forms\Components\TextInput::make('no_telp')
+                            ->label('No. Telp')
+                            ->required()
+                            ->prefix('+62')
+                            ->columnSpan(2),
 
-                Forms\Components\Textarea::make('alamat')
-                    ->label('Alamat')
-                    ->required()
-                    ->rows(3),
+                        Forms\Components\TextInput::make('asal')
+                            ->label('Asal')
+                            ->nullable()
+                            ->columnSpan(2),
 
-                Forms\Components\TextInput::make('asal')
-                    ->label('Asal')
-                    ->nullable(),
+                        Forms\Components\Textarea::make('alamat')
+                            ->label('Alamat')
+                            ->required()
+                            ->columnSpan(3),
 
-                Forms\Components\Radio::make('Jenis Kelamin')
-                    ->options([
-                        'L' => 'Laki-laki',
-                        'P' => 'Perempuan',
-                    ])
-                    ->required(),
-
-                Forms\Components\Select::make('jaminan1')
-                    ->label('Jaminan 1')
-                    ->options([
-                        'KTP' => 'KTP',
-                        'KTM' => 'KTM',
-                        'SIM' => 'SIM',
-                        'LAINNYA' => 'Lainnya',
-                    ])
-                    ->required(),
-
-                // Forms\Components\FileUpload::make('jaminan2')
-                //     ->disk()
-
-
-                Forms\Components\Select::make('jaminan2')
-                    ->label('Jaminan 2')
-                    ->options([
-                        'KTP' => 'KTP',
-                        'KTM' => 'KTM',
-                        'SIM' => 'SIM',
-                        'LAINNYA' => 'Lainnya',
+                        Forms\Components\Radio::make('Jenis Kelamin')
+                            ->label('Jenis Kelamin')
+                            ->options([
+                                'L' => 'Laki-laki',
+                                'P' => 'Perempuan',
+                            ])
+                            ->required()
+                            ->columnSpan(3),
                     ]),
 
+                Forms\Components\Section::make('Jaminan')
+                    ->schema([
+                        Forms\Components\Select::make('jaminan1')
+                            ->label('Jaminan 1')
+                            ->options([
+                                'KTP' => 'KTP',
+                                'KTM' => 'KTM',
+                                'SIM' => 'SIM',
+                                'LAINNYA' => 'Lainnya',
+                            ])
+                            ->required(),
 
+                        Forms\Components\FileUpload::make('foto_jaminan1')
+                            ->image()
+                            ->directory('fotoJaminan')
+                            ->label('Foto Jaminan 1')
+                            ->required(),
+
+                        Forms\Components\Select::make('jaminan2')
+                            ->label('Jaminan 2')
+                            ->options([
+                                'KTP' => 'KTP',
+                                'KTM' => 'KTM',
+                                'SIM' => 'SIM',
+                                'LAINNYA' => 'Lainnya',
+                            ]),
+
+                        Forms\Components\FileUpload::make('foto_jaminan2')
+                            ->image()
+                            ->label('Foto Jaminan 2',)
+
+                    ]),
             ]);
     }
 
@@ -117,6 +138,14 @@ class PenyewaResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Components\ImageEntry::make('foto_jaminan1')
             ]);
     }
 
