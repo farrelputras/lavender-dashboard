@@ -18,7 +18,7 @@ class Transaksi extends Model
         'rental_id',
         'nominal_transaksi',
         'tanggal_transaksi',
-        'keterangan',
+        'notes',
     ];
 
     protected $casts = [

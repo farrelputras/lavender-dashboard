@@ -67,6 +67,7 @@ class ListRentals extends ListRecords
     {
 
         return $table
+            ->defaultSort('tanggal_mulai', 'desc')
             ->columns([
                 // All Tabs
                 // TextColumn::make('id')
@@ -116,7 +117,6 @@ class ListRentals extends ListRecords
                     ->label('Sisa Tagihan')
                     ->numeric()
                     ->prefix('Rp ')
-                    ->sortable()
                     ->state(function (Rental $record): float {
                         return $record->total_biaya - $record->biaya_dibayar;
                     })
@@ -134,8 +134,8 @@ class ListRentals extends ListRecords
                     ->visible(fn(): bool => in_array($this->activeTab, ['pembayaran', 'pesanan'])),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status_rental')
-                    ->options(StatusRental::class),
+                // Tables\Filters\SelectFilter::make('status_rental')
+                //     ->options(StatusRental::class),
             ])
             ->actions([
                 // Selesaikan Rental Action
@@ -224,40 +224,47 @@ class ListRentals extends ListRecords
                                                 $end = Carbon::parse($endDate);
                                                 if ($start->gte($end)) return 'Rp 0';
 
+                                                //perhitungan hari (ngikut yg atas -> durasi)
                                                 $totalSeconds = $start->diffInSeconds($end);
                                                 $days = floor($totalSeconds / 86400);
 
-                                                $remainingSecHours = $totalSeconds % 86400;
-                                                $hours = floor($remainingSecHours / 3600);
-
-                                                $remainingSecMins = $totalSeconds % 3600;
-                                                $minutes = floor($remainingSecMins / 60);
+                                                $remainingSeconds = $totalSeconds - ($days * 86400);
+                                                $hours = floor($remainingSeconds / 3600);
 
                                                 if ($hours >= 24) {
                                                     $days++;
                                                     $hours = $hours - 24;
-                                                }
+                                                };
 
-                                                if ($hours > 12) {
-                                                    $days++;
-                                                    $hours = $hours - 12;
-                                                }
+                                                $remainingSeconds = $remainingSeconds - ($hours * 3600);
+                                                $minutes = floor($remainingSeconds / 60);
 
                                                 if ($minutes > 30) {
                                                     $hours++;
                                                     $minutes = $minutes - 30;
-                                                }
+                                                };
 
+                                                if ($hours > 12) {
+                                                    $days++;
+                                                    $hours = 0;
+                                                    $minutes = 0.;
+                                                };
+
+                                                //perhitungan harga
                                                 $harga24 = $kendaraan->harga_24jam ?? 0;
                                                 $harga12 = $kendaraan->harga_12jam ?? 0;
                                                 $harga6 = $kendaraan->harga_6jam ?? 0;
 
-                                                $hourPrice = 0;
-                                                if ($hours > 12) $hourPrice = $harga24;
-                                                elseif ($hours > 6) $hourPrice = $harga12;
-                                                elseif ($hours > 0) $hourPrice = $harga6;
+                                                //perhitungan hari
+                                                $dayPrice = $days * $harga24;
 
-                                                $totalSewa = ($days * $harga24) + $hourPrice;
+                                                //perhitungan sisa jam
+                                                $hourPrice = 0;
+                                                if ($hours > 6) $hourPrice = $harga12;
+                                                elseif ($hours > 0) $hourPrice = $harga6;
+                                                else $hourPrice = 0;
+
+                                                $totalSewa = $dayPrice + $hourPrice;
                                                 return 'Rp ' . number_format($totalSewa, 0, ',', '.');
                                             }),
 
@@ -303,13 +310,15 @@ class ListRentals extends ListRecords
                                 Forms\Components\TextInput::make('km_kembali')
                                     ->label('KM Kembali')
                                     ->numeric()
-                                    ->suffix('km'),
+                                    ->suffix('km')
+                                    ->default(fn(Rental $record) => $record->kilometer),
 
                                 Forms\Components\TextInput::make('total_biaya')
                                     ->label('Total Biaya')
                                     ->numeric()
                                     ->prefix('Rp')
                                     ->default(fn(Rental $record) => $record->total_biaya)
+
                                     ->required(),
 
                                 Forms\Components\Textarea::make('notes')
@@ -333,7 +342,7 @@ class ListRentals extends ListRecords
                         $record->kendaraan->update([
                             'status' => StatusKendaraan::TERSEDIA,
                             'bbm' => $data['bbm_kembali'],
-                            'kilometer' => $data['km_kembali']
+                            'kilometer' => $data['km_kembali'],
                         ]);
 
                         Notification::make()
@@ -353,7 +362,7 @@ class ListRentals extends ListRecords
                     ->form([
                         Section::make('Pembayaran')
                             ->description('Periksa kembali detail pembayaran.')
-                            ->columns(3)
+                            ->columns(4)
                             ->schema([
                                 Forms\Components\TextInput::make('penyewa.nama')
                                     ->label('Nama Penyewa')
@@ -370,6 +379,11 @@ class ListRentals extends ListRecords
                                     ->seconds(false)
                                     ->default(fn(Rental $record) => $record->tanggal_selesai)
                                     ->disabled(),
+
+                                Forms\Components\TextInput::make('notes_rental')
+                                    ->label('Catatan Rental')
+                                    ->disabled()
+                                    ->default(fn(Rental $record) => $record->notes),
 
                                 Grid::make(3)
                                     ->schema([
@@ -403,26 +417,38 @@ class ListRentals extends ListRecords
                         Grid::make(2)
                             ->schema([
                                 Forms\Components\DatePicker::make('tanggal_transaksi')
+                                    ->label('Tanggal Transaksi')
                                     ->default(now())
                                     ->required(),
 
                                 Forms\Components\TextInput::make('nominal_transaksi')
+                                    ->label('Nominal Transaksi')
                                     ->numeric()
                                     ->prefix('Rp')
                                     ->required(),
                             ]),
 
-                        Forms\Components\TextInput::make('notes')
-                            ->label('Catatan')
+                        Forms\Components\TextInput::make('notes_bayar')
+                            ->label('Catatan Pembayaran')
                             ->placeholder('Tulis catatan disini')
                             ->columnSpanFull(),
                     ])
                     ->action(function (Rental $record, array $data) {
-                        $record->transaksi()->create($data);
+                        $transactionData = [
+                            'tanggal_transaksi' => $data['tanggal_transaksi'],
+                            'nominal_transaksi' => $data['nominal_transaksi'],
+                            'notes' => $data['notes_bayar'],
+                        ];
+
+                        $record->transaksi()->create($transactionData);
 
                         $newBiayaDibayar = $record->biaya_dibayar + $data['nominal_transaksi'];
-                        $record->update(['biaya_dibayar' => $newBiayaDibayar]);
-                        if ($record->biaya_dibayar >= $record->total_biaya) {
+
+                        $record->update([
+                            'biaya_dibayar' => $newBiayaDibayar
+                        ]);
+
+                        if ($newBiayaDibayar >= $record->total_biaya) {
                             $record->update(['status_bayar' => StatusBayar::LUNAS]);
                         }
 
