@@ -53,13 +53,8 @@ class RentalResource extends Resource
                     ->relationship(
                         name: 'kendaraan',
                         titleAttribute: 'nopol',
-
-                        // // This modifies the query that POPULATES THE DROPDOWN
-                        // modifyQueryUsing: fn(Builder $query) => $query->where('status', 'TERSEDIA')
+                        modifyQueryUsing: fn(Builder $query) => $query->where('status', StatusKendaraan::TERSEDIA)
                     )
-                    // ->exists(modifyRuleUsing: function (Exists $rule) {
-                    //     return $rule->where('status', StatusKendaraan::TERSEDIA);
-                    // })
                     ->searchable()
                     ->preload()
                     ->required()
@@ -168,5 +163,10 @@ class RentalResource extends Resource
             'create' => Pages\CreateRental::route('/create'),
             // 'edit' => Pages\EditRental::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->withoutGlobalScope(SoftDeletingScope::class);
     }
 }

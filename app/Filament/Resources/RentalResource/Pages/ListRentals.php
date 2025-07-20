@@ -32,6 +32,8 @@ use Filament\Actions\Action as ModalAction;
 use Illuminate\View\View;
 use Carbon\Carbon;
 
+use Filament\Tables\Enums\ActionsPosition;
+
 class ListRentals extends ListRecords
 {
     protected static string $resource = RentalResource::class;
@@ -67,6 +69,7 @@ class ListRentals extends ListRecords
     {
 
         return $table
+            ->striped()
             ->defaultSort('tanggal_mulai', 'desc')
             ->columns([
                 // All Tabs
@@ -454,6 +457,7 @@ class ListRentals extends ListRecords
 
                         Notification::make()->title('Pembayaran berhasil dicatat')->success()->send();
                     }),
-            ]);
+                Tables\Actions\EditAction::make(),
+            ], position: ActionsPosition::BeforeCells);
     }
 }

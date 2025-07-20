@@ -170,14 +170,15 @@ class TransaksiResource extends Resource
                     ->label('Nominal Transaksi')
                     ->numeric()
                     ->prefix('Rp ')
-                    ->sortable(),
+                    ->sortable()
+                    ->color(fn($state) => $state < 0 ? 'danger' : 'success'),
 
-                TextColumn::make('rental_id')
+                Tables\Columns\TextColumn::make('rental_id')
                     ->label('ID Rental')
                     ->sortable()
                     ->searchable(),
 
-                TextColumn::make('notes')
+                Tables\Columns\TextColumn::make('notes')
                     ->label('Notes')
                     ->wrap(),
 

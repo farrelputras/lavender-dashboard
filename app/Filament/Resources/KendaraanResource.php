@@ -38,6 +38,12 @@ class KendaraanResource extends Resource
     protected static ?string $pluralModelLabel = 'Kendaraan';
 
     protected static ?int $navigationSort = 1;
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    protected static ?string $navigationBadgeTooltip = 'Total Kendaraan';
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
@@ -152,20 +158,17 @@ class KendaraanResource extends Resource
 
                                 Forms\Components\Section::make('Informasi Dinamis')
                                     ->schema([
-                                        Forms\Components\Grid::make(2)
-                                            ->schema([
-                                                Forms\Components\TextInput::make('kilometer')
-                                                    ->label('Kilometer Saat Ini')
-                                                    ->numeric()
-                                                    ->suffix('km')
-                                                    ->default(0),
+                                        Forms\Components\TextInput::make('kilometer')
+                                            ->label('Kilometer Saat Ini')
+                                            ->numeric()
+                                            ->suffix('km')
+                                            ->default(0),
 
-                                                Forms\Components\Select::make('status')
-                                                    ->label('Status Kendaraan')
-                                                    ->required()
-                                                    ->options(StatusKendaraan::class)
-                                                    ->default('TERSEDIA'),
-                                            ]),
+                                        Forms\Components\Select::make('status')
+                                            ->label('Status Kendaraan')
+                                            ->required()
+                                            ->options(StatusKendaraan::class)
+                                            ->default('TERSEDIA'),
                                     ]),
                             ])->columnSpan(1),
                     ]),
@@ -175,6 +178,7 @@ class KendaraanResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->striped()
             ->columns([
                 Stack::make([
                     ImageColumn::make('gambar')

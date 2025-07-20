@@ -19,6 +19,7 @@ use Illuminate\View\ComponentSlot;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
 use Filament\Infolists\Components;
+use Illuminate\Database\Eloquent\Model;
 
 class PenyewaResource extends Resource
 {
@@ -57,7 +58,7 @@ class PenyewaResource extends Resource
                             ->required()
                             ->columnSpan(3),
 
-                        Forms\Components\Radio::make('Jenis Kelamin')
+                        Forms\Components\Radio::make('jenis_kelamin')
                             ->label('Jenis Kelamin')
                             ->options([
                                 'L' => 'Laki-laki',
@@ -68,6 +69,7 @@ class PenyewaResource extends Resource
                     ]),
 
                 Forms\Components\Section::make('Jaminan')
+                    ->columns(2)
                     ->schema([
                         Forms\Components\Select::make('jaminan1')
                             ->label('Jaminan 1')
@@ -79,12 +81,6 @@ class PenyewaResource extends Resource
                             ])
                             ->required(),
 
-                        Forms\Components\FileUpload::make('foto_jaminan1')
-                            ->image()
-                            ->directory('fotoJaminan')
-                            ->label('Foto Jaminan 1')
-                            ->required(),
-
                         Forms\Components\Select::make('jaminan2')
                             ->label('Jaminan 2')
                             ->options([
@@ -94,8 +90,15 @@ class PenyewaResource extends Resource
                                 'LAINNYA' => 'Lainnya',
                             ]),
 
+                        Forms\Components\FileUpload::make('foto_jaminan1')
+                            ->image()
+                            ->directory('fotoJaminan')
+                            ->label('Foto Jaminan 1')
+                            ->required(),
+
                         Forms\Components\FileUpload::make('foto_jaminan2')
                             ->image()
+                            ->directory('fotoJaminan')
                             ->label('Foto Jaminan 2',)
 
                     ]),
@@ -105,6 +108,10 @@ class PenyewaResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // ->recordUrl(
+            //     fn(Model $record): string => route('/', ['record' => $record]),
+            // )
+            ->striped()
             ->columns([
                 TextColumn::make('nama')
                     ->label('Nama Penyewa')
@@ -120,18 +127,19 @@ class PenyewaResource extends Resource
                     ->label('Alamat')
                     ->searchable(),
 
-                TextColumn::make('hutang')
-                    ->label('Hutang')
-                    ->numeric()
-                    ->prefix('Rp ')
-                    ->default(0)
-                    ->sortable()
-                    ->color(fn($state) => $state > 0 ? 'danger' : 'default'),
+                // TextColumn::make('hutang')
+                //     ->label('Hutang')
+                //     ->numeric()
+                //     ->prefix('Rp ')
+                //     ->default(0)
+                //     ->sortable()
+                //     ->color(fn($state) => $state > 0 ? 'danger' : 'default'),
             ])
             ->filters([
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -145,7 +153,50 @@ class PenyewaResource extends Resource
     {
         return $infolist
             ->schema([
-                Components\ImageEntry::make('foto_jaminan1')
+                Components\Section::make('Informasi Umum')
+                    ->columns(6)
+                    ->schema([
+                        Components\TextEntry::make('nama')
+                            ->label('Nama Penyewa')
+                            ->columnSpan(2),
+
+                        Components\TextEntry::make('no_telp')
+                            ->label('No. Telp')
+                            ->prefix('+62')
+                            ->url(fn(?string $state): ?string => $state ? "https://wa.me/62" . $state : null)
+                            ->openUrlInNewTab()
+                            ->columnSpan(2),
+
+                        Components\TextEntry::make('asal')
+                            ->label('Asal')
+                            ->columnSpan(2),
+
+                        Components\TextEntry::make('alamat')
+                            ->label('Alamat')
+                            ->columnSpan(3),
+
+                        Components\TextEntry::make('jenis_kelamin')
+                            ->label('Jenis Kelamin')
+                            ->badge()
+                            ->formatStateUsing(fn(string $state): string => match ($state) {
+                                'L' => 'Laki-Laki',
+                                'P' => 'Perempuan',
+                            })
+                            ->columnSpan(3),
+                    ]),
+
+                Components\Section::make('Jaminan')
+                    ->columns(2)
+                    ->schema([
+                        Components\TextEntry::make('jaminan1')
+                            ->hiddenLabel(),
+                        Components\TextEntry::make('jaminan2')
+                            ->hiddenLabel(),
+                        Components\ImageEntry::make('foto_jaminan1')
+                            ->hiddenLabel(),
+                        Components\ImageEntry::make('foto_jaminan2')
+                            ->hiddenLabel(),
+                    ]),
             ]);
     }
 
@@ -160,8 +211,8 @@ class PenyewaResource extends Resource
     {
         return [
             'index' => Pages\ListPenyewas::route('/'),
-            'create' => Pages\CreatePenyewa::route('/create'),
-            'edit' => Pages\EditPenyewa::route('/{record}/edit'),
+            // 'create' => Pages\CreatePenyewa::route('/create'),
+            // 'edit' => Pages\EditPenyewa::route('/{record}/edit'),
         ];
     }
 }
